@@ -1,7 +1,7 @@
 # React Native Global Store 
 ![yarn][npmDownloads] ![PRsBadge] ![npm][npmLicense] ![npm][npmVersion]
 
-### Add Global Store to  your app in just One Step!
+### Add Global Store to your app in just One Step!
 
 - No Store configuration needed!
 - No Reducers or *ACTIONS* required.
@@ -29,12 +29,12 @@
 	yarn add react-native-global-store
 	```
 
-> No Linking or Pods is needed, you are ready to go! 
+> No Linking or Pods are needed, you are ready to go! 
  
 
 ## Usage
 
-### **Provider**
+### **GlobalStoreProvider**
 ###### Props
 ```ts
 initialState?:  object;
@@ -124,7 +124,7 @@ class UserPage extend React.Component {
 	// Your Component goes here
 	
 	// Access your store using this.props.yourKey
-	// Update your store state using this.props.setGlobalStore({})
+	// Update your store state using this.props.setGlobalState({})
 }
 
 // this will connect your global store to UserPage component props
