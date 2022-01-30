@@ -40,7 +40,7 @@ const GlobalStoreProvider: FunctionComponent<{
 	initialState = {},
 	persistedKeys = [],
 	loadingUI = <View />,
-	storageKey = "GlobalStateProvider"
+	storageKey = "GlobalStoreProvider"
 }) => {
 	const [globalState, updateState] = useState<IndexedObject>({});
 	const [isLoading, setLoading] = useState(true);

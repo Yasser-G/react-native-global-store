@@ -50,7 +50,7 @@ storageKey?:  string;
 // Optionally change Async Storage Key, default key is "GlobalStoreProvider"
 ```
 ```ts
-import { GlobalStoreProvider } from "react-native-redux"
+import { GlobalStoreProvider } from "react-native-global-store"
 ```
 ###### Usage Example
 ```ts
@@ -76,7 +76,7 @@ export default ()=> (
 
 ### **useGlobalStore** 
 ```ts
-import { useGlobalStore } from "react-native-redux"
+import { useGlobalStore } from "react-native-global-store"
 ```
 ```ts
 const [globalState, setGlobalState] = useGlobalStore()
@@ -86,7 +86,7 @@ const [globalState, setGlobalState] = useGlobalStore()
  ##### Usage Example
 ```ts
 import React from "react"
-import { useGlobalStore } from "react-native-redux"
+import { useGlobalStore } from "react-native-global-store"
 
 const MyComponent = (props) => {
 
