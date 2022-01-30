@@ -5,7 +5,7 @@ import { View } from "react-native";
 type IndexedObject = { [key: string]: any };
 
 const GlobalStateContext = createContext<
-	[globalState: object, setGlobalState: (PartialState: object) => void]
+	[globalState: IndexedObject, setGlobalState: (PartialState: object) => void]
 >([{}, () => null]);
 
 /**
@@ -40,7 +40,7 @@ const GlobalStoreProvider: FunctionComponent<{
 	initialState = {},
 	persistedKeys = [],
 	loadingUI = <View />,
-	storageKey = "GlobalStoreProvider"
+	storageKey = "GlobalStateProvider"
 }) => {
 	const [globalState, updateState] = useState<IndexedObject>({});
 	const [isLoading, setLoading] = useState(true);

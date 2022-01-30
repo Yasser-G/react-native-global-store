@@ -1,6 +1,6 @@
 {
   "name": "react-native-global-store",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "React Native App Store state holder and persistor",
   "main": "index.tsx",
   "scripts": {
