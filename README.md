@@ -13,6 +13,7 @@ React Native Global Store is a lightweight and efficient global state management
 - Easy connection with components using `connect`.
 - Functional component support with `useGlobalStore`.
 - Inspired by Redux but optimized for simplicity and performance.
+- Automatically persists selected state keys using AsyncStorage.
 
 ## Installation
 
@@ -70,6 +71,7 @@ A hook for accessing and updating the global state in functional components.
 ```tsx
 import React from "react";
 import { useGlobalStore } from "react-native-global-store";
+import { Text, Button } from "react-native";
 
 const MyComponent = () => {
   const [globalState, setGlobalState] = useGlobalStore();
@@ -115,6 +117,9 @@ export default connect(SettingsScreen);
 
 ## License
 MIT
+
+## Contributing
+Contributions are welcome! Feel free to open issues or submit pull requests.
 
 [asyncstorage]: https://github.com/react-native-async-storage/async-storage#getting-started
 [npmDownloads]: <https://img.shields.io/npm/dt/react-native-global-store?label=Installs&logo=npm&style=plastic>
