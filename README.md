@@ -20,7 +20,7 @@ npm install @react-native-async-storage/async-storage
 ### 1. Wrap Your App with `GlobalStoreProvider`
 ```tsx
 import React from "react";
-import { GlobalStoreProvider } from "./path-to-global-store";
+import { GlobalStoreProvider } from "react-native-global-store";
 import App from "./App";
 
 const Root = () => (
@@ -40,7 +40,7 @@ export default Root;
 ```tsx
 import React from "react";
 import { View, Text, Button } from "react-native";
-import { useGlobalStore } from "./path-to-global-store";
+import { useGlobalStore } from "react-native-global-store";
 
 const HomeScreen = () => {
   const [globalState, setGlobalState] = useGlobalStore();
@@ -62,7 +62,7 @@ export default HomeScreen;
 ```tsx
 import React, { Component } from "react";
 import { View, Text, Button } from "react-native";
-import { connect } from "./path-to-global-store";
+import { connect } from "react-native-global-store";
 
 class SettingsScreen extends Component {
   render() {
