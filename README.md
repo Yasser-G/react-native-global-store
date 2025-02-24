@@ -114,3 +114,9 @@ export default connect(MyComponent);
 ## License
 MIT
 
+
+
+[npmDownloads]: <https://img.shields.io/npm/dt/react-native-global-store?label=Installs&logo=npm&style=plastic>
+[npmLicense]: <https://img.shields.io/npm/l/react-native-global-store?label=License&style=plastic>
+[npmVersion]: <https://img.shields.io/npm/v/react-native-global-store?label=Latest%20Version&style=plastic>
+[PRsBadge]: <https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=plastic>
