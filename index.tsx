@@ -1,121 +1,183 @@
-import React, { useState, useEffect, useContext, createContext, FunctionComponent, ComponentClass } from "react";
-import { useAsyncStorage } from "@react-native-async-storage/async-storage";
+import React, { useState, useEffect, useContext, createContext, FunctionComponent, ComponentClass, ReactNode, useMemo, useCallback } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View } from "react-native";
 
-type IndexedObject = { [key: string]: any };
+type IndexedObject = Record<string, any>;
 
-const GlobalStateContext = createContext<
-	[globalState: IndexedObject, setGlobalState: (PartialState: object) => void]
->([{}, () => null]);
+type GlobalStoreContextType = [
+  globalState: IndexedObject, 
+  setGlobalState: (partialState: IndexedObject, callback?: (updatedState: IndexedObject) => void) => void
+];
+
+const GlobalStateContext = createContext<GlobalStoreContextType>([{}, () => null]);
+
+interface GlobalStoreProviderProps {
+  /**
+   * Optional Initial State, defaults to empty object
+   */
+  initialState?: IndexedObject;
+  /**
+   * Optional keys to persist (whitelist for persistence)
+   */
+  persistedKeys?: string[];
+  /**
+   * Optional Loading UI, defaults to empty View
+   */
+  loadingUI?: JSX.Element;
+  /**
+   * Optional Async Storage Key, default is "GlobalStateProvider"
+   */
+  storageKey?: string;
+  /**
+   * Children components
+   */
+  children: ReactNode;
+}
 
 /**
+ * Global Store Provider Component
  * @example
  *  <GlobalStoreProvider
- * 	initialState={OptionalInitialState} // defaults to {}
- * 	persistedKeys={["optional", "keys", "to", "persist", "its", "values"]}
- * 	storageKey="Optional unique id for Async Storage"
- * >
- * 	// Your App
- * </GlobalStoreProvider>
+ *    initialState={optionalInitialState} // defaults to {}
+ *    persistedKeys={["optional", "keys", "to", "persist"]}
+ *    storageKey="Optional unique id for Async Storage"
+ *  >
+ *    {/* Your App */}
+ *  </GlobalStoreProvider>
  */
-const GlobalStoreProvider: FunctionComponent<{
-	/**
-	 * Optional Initial State, defaults to {}
-	 */
-	initialState?: object;
-	/**
-	 * Optional keys to persist its values ( white list to persist )
-	 */
-	persistedKeys?: string[];
-	/**
-	 * Optional Loading UI, defaults to : < View />
-	 */
-	loadingUI?: JSX.Element;
-	/**
-	 * Optionally change Async Storage Key, default key is "GlobalStoreProvider"
-	 */
-	storageKey?: string;
-}> = ({
-	children,
-	initialState = {},
-	persistedKeys = [],
-	loadingUI = <View />,
-	storageKey = "GlobalStateProvider"
+export const GlobalStoreProvider: FunctionComponent<GlobalStoreProviderProps> = ({
+  children,
+  initialState = {},
+  persistedKeys = [],
+  loadingUI = <View />,
+  storageKey = "GlobalStateProvider"
 }) => {
-	const [globalState, updateState] = useState<IndexedObject>({});
-	const [isLoading, setLoading] = useState(true);
-	const setGlobalState = (
-		PartialState: object,
-		callBack?: (UpdatedState: IndexedObject) => void
-	) => {
-		let UpdatedState = {};
-		updateState((prevState) => {
-			UpdatedState = { ...prevState, ...PartialState };
-			updatePersistedValue(UpdatedState);
-			return UpdatedState;
-		});
-		if (callBack) callBack(UpdatedState);
-	};
+  const [globalState, updateState] = useState<IndexedObject>({});
+  const [isLoading, setLoading] = useState(true);
 
-	useEffect(() => {
-		useAsyncStorage(storageKey).getItem((error, result) => {
-			if (error) {
-				console.log("ReactNativeGlobalStore: Rehydration Failed!", error.message);
-			} else {
-				if (result) {
-					// Second Run
-					setGlobalState({ ...initialState, ...JSON.parse(result) });
-					console.log("ReactNativeGlobalStore: Rehydrated Successfully!");
-				} else {
-					// First Run
-					setGlobalState(initialState);
-					console.log("ReactNativeGlobalStore: Initialized Successfully!");
-				}
-				setLoading(false);
-			}
-		});
-	}, []);
+  // Using useCallback to prevent recreation of this function on every render
+  const setGlobalState = useCallback((
+    partialState: IndexedObject,
+    callback?: (updatedState: IndexedObject) => void
+  ) => {
+    updateState(prevState => {
+      const updatedState = { ...prevState, ...partialState };
+      
+      // Only persist data if we have keys to persist
+      if (persistedKeys.length > 0) {
+        persistData(updatedState, persistedKeys, storageKey);
+      }
+      
+      if (callback) callback(updatedState);
+      return updatedState;
+    });
+  }, [persistedKeys, storageKey]);
 
-	const updatePersistedValue = (UpdatedState: IndexedObject) => {
-		const dataToPersist: IndexedObject = {};
-		for (const key of persistedKeys) {
-			dataToPersist[key] = UpdatedState[key];
-		}
-		useAsyncStorage(storageKey).setItem(JSON.stringify(dataToPersist), (error) => {
-			if (error) {
-				console.error("ReactNativeGlobalStore: Data Persist Error", error.message);
-			}
-		});
-	};
+  // Load persisted data on mount only
+  useEffect(() => {
+    const loadPersistedData = async () => {
+      try {
+        const result = await AsyncStorage.getItem(storageKey);
+        
+        if (result) {
+          // Second run - merge persisted data with initial state
+          const parsedData = JSON.parse(result);
+          setGlobalState({ ...initialState, ...parsedData });
+          console.log("ReactNativeGlobalStore: Rehydrated Successfully!");
+        } else {
+          // First run - just use initial state
+          setGlobalState(initialState);
+          console.log("ReactNativeGlobalStore: Initialized Successfully!");
+        }
+      } catch (error) {
+        console.error("ReactNativeGlobalStore: Rehydration Failed!", error);
+        // Fall back to initial state on error
+        setGlobalState(initialState);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-	if (isLoading) return loadingUI;
-	return (
-		<GlobalStateContext.Provider value={[globalState, setGlobalState]} children={children} />
-	);
+    loadPersistedData();
+  }, [initialState, storageKey]);
+
+  // Memoize the context value to prevent unnecessary renders
+  const contextValue = useMemo<GlobalStoreContextType>(
+    () => [globalState, setGlobalState],
+    [globalState, setGlobalState]
+  );
+
+  if (isLoading) return loadingUI;
+  
+  return (
+    <GlobalStateContext.Provider value={contextValue}>
+      {children}
+    </GlobalStateContext.Provider>
+  );
 };
 
 /**
- * Use Global Store In Function Component
- * @example
- * const [globalState, setGlobalState] = useGlobalStore()
+ * Persist relevant data to AsyncStorage
  */
-const useGlobalStore = () => useContext(GlobalStateContext);
+const persistData = async (
+  updatedState: IndexedObject, 
+  persistedKeys: string[], 
+  storageKey: string
+) => {
+  try {
+    const dataToPersist: IndexedObject = {};
+    
+    // Only extract keys that should be persisted
+    for (const key of persistedKeys) {
+      if (key in updatedState) {
+        dataToPersist[key] = updatedState[key];
+      }
+    }
+    
+    // Only write to storage if we have data to persist
+    if (Object.keys(dataToPersist).length > 0) {
+      await AsyncStorage.setItem(storageKey, JSON.stringify(dataToPersist));
+    }
+  } catch (error) {
+    console.error("ReactNativeGlobalStore: Data Persist Error", error);
+  }
+};
 
 /**
- * Connect Global Store to Class Components' props
+ * Hook to use Global Store in function components
+ * @example
+ * const [globalState, setGlobalState] = useGlobalStore();
+ * @returns [globalState, setGlobalState]
+ */
+export const useGlobalStore = (): GlobalStoreContextType => useContext(GlobalStateContext);
+
+/**
+ * HOC to connect Global Store to class components via props
  * @example
  * class MyComponent extends React.Component {
- * 	// this.props contains all globalStoreState and setGlobalState
+ *   // this.props contains all globalState values and setGlobalState
  * }
- * const ConnectedComponent = connect(MyComponent)
+ * const ConnectedComponent = connect(MyComponent);
  */
-const connect = (Componenet: ComponentClass) =>
-  class extends React.PureComponent {
+export const connect = <P extends object>(Component: ComponentClass<P>) => {
+  class ConnectedComponent extends React.PureComponent<P> {
     static contextType = GlobalStateContext;
+    
     render() {
-		const [globalState, setGlobalState] = this.context
-      return <Componenet {...this.props} {...globalState} setGlobalState={setGlobalState} />;
+      const [globalState, setGlobalState] = this.context as GlobalStoreContextType;
+      return (
+        <Component 
+          {...this.props} 
+          {...globalState} 
+          setGlobalState={setGlobalState} 
+        />
+      );
     }
-  };
-
-export { GlobalStoreProvider, useGlobalStore, connect };
+  }
+  
+  // Set display name for debugging
+  const componentName = Component.displayName || Component.name || 'Component';
+  ConnectedComponent.displayName = `GlobalStore(${componentName})`;
+  
+  return ConnectedComponent;
+};

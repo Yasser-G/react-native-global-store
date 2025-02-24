@@ -1,19 +1,24 @@
 {
   "name": "react-native-global-store",
-  "version": "1.0.4",
-  "description": "React Native App Store state holder and persistor",
+  "version": "1.1.0",
+  "description": "A lightweight and efficient global state management solution for React Native with built-in AsyncStorage persistence.",
   "main": "index.tsx",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "react",
-    "native",
-    "redux",
+    "react-native",
+    "global-state",
     "store",
-    "persist"
+    "persist",
+    "async-storage"
   ],
-  "author": "yas@keemail.me",
-  "repository": "git://github.com/Yasser-G/react-native-global-store",
-  "license": "ISC"
+  "author": {
+    "name": "Yasser Daif",
+    "email": "yas@keemail.me",
+    "url": "https://github.com/Yasser-G"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yasser-G/react-native-global-store.git"
+  },
+  "license": "MIT"
 }
