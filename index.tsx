@@ -42,7 +42,7 @@ interface GlobalStoreProviderProps {
  *    persistedKeys={["optional", "keys", "to", "persist"]}
  *    storageKey="Optional unique id for Async Storage"
  *  >
- *    {/* Your App */}
+ *    <App />
  *  </GlobalStoreProvider>
  */
 export const GlobalStoreProvider: FunctionComponent<GlobalStoreProviderProps> = ({
